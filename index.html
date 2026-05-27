@@ -182,6 +182,7 @@
     apts.forEach(apt => {
       L.marker([apt.lat, apt.lng], { icon: aptIcon })
         .addTo(map)
+        .bindTooltip(`<b>${apt.addr}</b><br>💰 $2,000/mo`, { direction: 'top', offset: [0, -16] })
         .bindPopup(`<div class="popup-name" style="color:#e8a020">Potential Studio Apt</div><div class="popup-addr">📍 ${apt.addr}, San Francisco</div><div class="popup-status">💰 $2,000/mo</div>`);
     });
 
