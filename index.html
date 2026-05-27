@@ -28,6 +28,7 @@
     }
     .marker-lululemon { background: #e63946; }
     .marker-banana { background: #2a6496; }
+    .marker-home { background: #2d9e5f; font-size: 15px; }
 
     .legend {
       position: fixed;
@@ -69,6 +70,7 @@
   <div class="legend">
     <div><span class="legend-dot" style="background:#e63946"></span>lululemon</div>
     <div><span class="legend-dot" style="background:#2a6496"></span>Banana Republic</div>
+    <div><span class="legend-dot" style="background:#2d9e5f"></span>My Place</div>
   </div>
 
   <script>
@@ -155,6 +157,17 @@
         lng: -122.3952
       }
     ];
+
+    const homeIcon = L.divIcon({
+      className: '',
+      html: `<div class="custom-marker marker-home">⌂</div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -16]
+    });
+    L.marker([37.7727, -122.4296], { icon: homeIcon })
+      .addTo(map)
+      .bindPopup(`<div class="popup-name" style="color:#2d9e5f">My Place</div><div class="popup-addr">📍 873 Oak St, San Francisco</div>`);
 
     stores.forEach(store => {
       const icon = L.divIcon({
