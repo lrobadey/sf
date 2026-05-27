@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lululemon Stores – SF Bay Area</title>
+  <title>SF Bay Area Stores</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -14,7 +14,6 @@
     #map { height: calc(100vh - 48px); width: 100%; }
 
     .custom-marker {
-      background: #e63946;
       color: white;
       border-radius: 50%;
       width: 28px;
@@ -26,6 +25,28 @@
       font-size: 13px;
       border: 2px solid white;
       box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    }
+    .marker-lululemon { background: #e63946; }
+    .marker-banana { background: #2a6496; }
+
+    .legend {
+      position: fixed;
+      bottom: 30px;
+      left: 12px;
+      background: white;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 1000;
+      line-height: 1.9;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
     }
 
     .leaflet-popup-content {
@@ -43,8 +64,12 @@
   </style>
 </head>
 <body>
-  <h1>lululemon <span>●</span> SF Bay Area Stores</h1>
+  <h1>SF Bay Area Stores</h1>
   <div id="map"></div>
+  <div class="legend">
+    <div><span class="legend-dot" style="background:#e63946"></span>lululemon</div>
+    <div><span class="legend-dot" style="background:#2a6496"></span>Banana Republic</div>
+  </div>
 
   <script>
     const map = L.map('map').setView([37.82, -122.38], 12);
@@ -102,13 +127,39 @@
         hours: "Closed · Opens tomorrow 10 AM",
         lat: 37.8697,
         lng: -122.2978
+      },
+      {
+        num: 1,
+        brand: "banana",
+        name: "Banana Republic",
+        address: "152 Geary St, San Francisco",
+        phone: "(628) 333-2510",
+        sponsored: false,
+        rating: "3.5/5",
+        reviews: 11,
+        hours: "Closed · Opens tomorrow 11 AM",
+        lat: 37.7877,
+        lng: -122.4065
+      },
+      {
+        num: 3,
+        brand: "banana",
+        name: "Banana Republic",
+        address: "2 Folsom St, San Francisco",
+        phone: "(415) 966-2610",
+        sponsored: false,
+        rating: "2/5",
+        reviews: 51,
+        hours: "Closed · Opens tomorrow 10 AM",
+        lat: 37.7847,
+        lng: -122.3952
       }
     ];
 
     stores.forEach(store => {
       const icon = L.divIcon({
         className: '',
-        html: `<div class="custom-marker">${store.num}</div>`,
+        html: `<div class="custom-marker ${store.brand === 'banana' ? 'marker-banana' : 'marker-lululemon'}">${store.num}</div>`,
         iconSize: [28, 28],
         iconAnchor: [14, 14],
         popupAnchor: [0, -16]
