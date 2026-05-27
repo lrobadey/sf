@@ -30,6 +30,7 @@
     .marker-banana { background: #2a6496; }
     .marker-home { background: #2d9e5f; font-size: 15px; }
     .marker-apt { background: #e8a020; font-size: 15px; }
+    .marker-school { background: #7b2d8b; font-size: 15px; }
 
     .legend {
       position: fixed;
@@ -73,6 +74,7 @@
     <div><span class="legend-dot" style="background:#2a6496"></span>Banana Republic</div>
     <div><span class="legend-dot" style="background:#2d9e5f"></span>Luca's Place</div>
     <div><span class="legend-dot" style="background:#e8a020"></span>Potential Studio</div>
+    <div><span class="legend-dot" style="background:#7b2d8b"></span>School (SFCM)</div>
   </div>
 
   <script>
@@ -167,6 +169,18 @@
       iconAnchor: [14, 14],
       popupAnchor: [0, -16]
     });
+    const schoolIcon = L.divIcon({
+      className: '',
+      html: `<div class="custom-marker marker-school">♪</div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -16]
+    });
+    L.marker([37.7771, -122.4194], { icon: schoolIcon })
+      .addTo(map)
+      .bindTooltip(`<b>SF Conservatory of Music</b>`, { direction: 'top', offset: [0, -16] })
+      .bindPopup(`<div class="popup-name" style="color:#7b2d8b">SF Conservatory of Music</div><div class="popup-addr">📍 50 Oak St, San Francisco</div><div class="popup-status">🎓 My School</div>`);
+
     const aptIcon = L.divIcon({
       className: '',
       html: `<div class="custom-marker marker-apt">★</div>`,
