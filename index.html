@@ -29,6 +29,7 @@
     .marker-lululemon { background: #e63946; }
     .marker-banana { background: #2a6496; }
     .marker-home { background: #2d9e5f; font-size: 15px; }
+    .marker-apt { background: #e8a020; font-size: 15px; }
 
     .legend {
       position: fixed;
@@ -71,6 +72,7 @@
     <div><span class="legend-dot" style="background:#e63946"></span>lululemon</div>
     <div><span class="legend-dot" style="background:#2a6496"></span>Banana Republic</div>
     <div><span class="legend-dot" style="background:#2d9e5f"></span>Luca's Place</div>
+    <div><span class="legend-dot" style="background:#e8a020"></span>Potential Studio</div>
   </div>
 
   <script>
@@ -165,6 +167,17 @@
       iconAnchor: [14, 14],
       popupAnchor: [0, -16]
     });
+    const aptIcon = L.divIcon({
+      className: '',
+      html: `<div class="custom-marker marker-apt">★</div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -16]
+    });
+    L.marker([37.7764, -122.4226], { icon: aptIcon })
+      .addTo(map)
+      .bindPopup(`<div class="popup-name" style="color:#e8a020">Potential Studio Apt</div><div class="popup-addr">📍 400 Grove St, San Francisco</div>`);
+
     L.marker([37.7727, -122.4296], { icon: homeIcon })
       .addTo(map)
       .bindPopup(`<div class="popup-name" style="color:#2d9e5f">Luca's Place</div><div class="popup-addr">📍 873 Oak St, San Francisco</div>`);
