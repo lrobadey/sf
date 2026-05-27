@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apartment Tracker – SF</title>
+  <script src="data.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f4f5f7; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 24px; background: white; border-bottom: 1px solid #e4e4e4;
+      position: sticky; top: 0; z-index: 100;
+    }
+    nav a { text-decoration: none; color: #555; font-size: 13px; }
+    nav a:hover { color: #e8a020; }
+    nav h1 { font-size: 15px; font-weight: 600; color: #333; }
+    .saved-indicator { font-size: 12px; color: #aaa; transition: color 0.3s; }
+    .saved-indicator.flash { color: #2d9e5f; }
+
+    .wrapper { padding: 24px; overflow-x: auto; }
+
+    table {
+      width: 100%; border-collapse: collapse; background: white;
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+      min-width: 900px;
+    }
+
+    thead tr { background: #fafafa; border-bottom: 2px solid #efefef; }
+    thead th {
+      padding: 11px 14px; text-align: left; font-size: 11px;
+      font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.6px;
+      white-space: nowrap;
+    }
+
+    tbody tr { border-bottom: 1px solid #f2f2f2; transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fffbf3; }
+    tbody tr.highlighted { background: #fff8e1; }
+
+    td { padding: 10px 14px; vertical-align: middle; font-size: 14px; }
+
+    .addr { font-weight: 600; color: #333; white-space: nowrap; }
+    .city { font-size: 11px; color: #aaa; font-weight: 400; display: block; margin-top: 1px; }
+    .rent { color: #e8a020; font-weight: 700; white-space: nowrap; }
+
+    /* Status pill */
+    .status-wrap select {
+      border: none; border-radius: 20px; padding: 4px 10px;
+      font-size: 12px; font-weight: 600; cursor: pointer; outline: none;
+      appearance: none; -webkit-appearance: none; text-align: center;
+    }
+    .s-interested { background: #e3f2fd; color: #1565c0; }
+    .s-touring    { background: #fff3e0; color: #e65100; }
+    .s-applied    { background: #e8f5e9; color: #2e7d32; }
+    .s-passed     { background: #fce4ec; color: #c62828; }
+
+    /* Editable fields */
+    .field {
+      border: 1px solid transparent; border-radius: 5px; padding: 5px 7px;
+      font-size: 13px; font-family: inherit; width: 100%; background: transparent;
+      color: #333; outline: none; transition: border-color 0.15s, background 0.15s;
+    }
+    .field:focus { border-color: #e8a020; background: white; }
+    .field::placeholder { color: #ccc; }
+    textarea.field { resize: none; height: 52px; }
+
+    /* Walk time */
+    .walk { font-size: 13px; white-space: nowrap; font-weight: 500; }
+    .walk-close  { color: #2d9e5f; }
+    .walk-mid    { color: #e8a020; }
+    .walk-far    { color: #c0392b; }
+
+    /* Amenity tags */
+    .tags { display: flex; flex-wrap: wrap; gap: 4px; min-width: 160px; }
+    .tag {
+      background: #f0f0f0; color: #555; font-size: 11px;
+      padding: 2px 8px; border-radius: 10px;
+    }
+    .add-tag {
+      background: none; border: 1px dashed #ccc; color: #bbb; font-size: 11px;
+      padding: 2px 8px; border-radius: 10px; cursor: pointer;
+    }
+    .add-tag:hover { border-color: #e8a020; color: #e8a020; }
+
+    /* Map link */
+    .map-btn {
+      display: inline-block; background: #e8a020; color: white;
+      text-decoration: none; padding: 5px 12px; border-radius: 5px;
+      font-size: 12px; font-weight: 600; white-space: nowrap;
+    }
+    .map-btn:hover { background: #d4911c; }
+
+    /* Amenity picker popover */
+    #picker {
+      position: fixed; background: white; border: 1px solid #e4e4e4;
+      border-radius: 10px; padding: 14px; box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      z-index: 500; width: 230px; display: none;
+    }
+    #picker h4 { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    #picker label { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 13px; cursor: pointer; }
+    #picker input[type=checkbox] { accent-color: #e8a020; }
+    #picker button {
+      margin-top: 12px; width: 100%; padding: 7px; background: #e8a020;
+      color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+    }
+    #picker button:hover { background: #d4911c; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html">← Map</a>
+  <h1>Apartment Tracker</h1>
+  <span class="saved-indicator" id="saved">Auto-saved</span>
+</nav>
+
+<div class="wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Address</th>
+        <th>Rent</th>
+        <th>Status</th>
+        <th>Contact</th>
+        <th>Phone / Email</th>
+        <th>Amenities</th>
+        <th>Notes</th>
+        <th>Walk to SFCM</th>
+        <th>Map</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div id="picker">
+  <h4>Amenities</h4>
+  <div id="picker-options"></div>
+  <button id="picker-done">Done</button>
+</div>
+
+<script>
+  const AMENITIES = [
+    'In-unit laundry','Laundry in building','Dishwasher','Parking',
+    'Pet-friendly','Gym','Doorman','Rooftop','A/C','Hardwood floors',
+    'Natural light','Furnished','Storage','Balcony'
+  ];
+
+  const STATUS = {
+    interested: { label: 'Interested', cls: 's-interested' },
+    touring:    { label: 'Touring',    cls: 's-touring'    },
+    applied:    { label: 'Applied',    cls: 's-applied'    },
+    passed:     { label: 'Passed',     cls: 's-passed'     },
+  };
+
+  function load() {
+    return JSON.parse(localStorage.getItem('apt-tracker') || '{}');
+  }
+
+  function save(id, field, value) {
+    const d = load();
+    if (!d[id]) d[id] = {};
+    d[id][field] = value;
+    localStorage.setItem('apt-tracker', JSON.stringify(d));
+    flash();
+  }
+
+  function get(id, field, def = '') {
+    return load()[id]?.[field] ?? def;
+  }
+
+  function flash() {
+    const el = document.getElementById('saved');
+    el.textContent = 'Saved ✓';
+    el.classList.add('flash');
+    setTimeout(() => { el.textContent = 'Auto-saved'; el.classList.remove('flash'); }, 1500);
+  }
+
+  function walkClass(w) {
+    const m = parseInt(w);
+    if (m <= 8)  return 'walk-close';
+    if (m <= 20) return 'walk-mid';
+    return 'walk-far';
+  }
+
+  function render() {
+    const d = load();
+    document.getElementById('tbody').innerHTML = APTS.map(apt => {
+      const status    = get(apt.id, 'status', 'interested');
+      const contact   = get(apt.id, 'contact');
+      const phone     = get(apt.id, 'phone');
+      const amenities = get(apt.id, 'amenities', []);
+      const notes     = get(apt.id, 'notes');
+
+      const tags = amenities.map(a => `<span class="tag">${a}</span>`).join('');
+      const s = STATUS[status] || STATUS.interested;
+
+      return `
+      <tr id="row-${apt.id}">
+        <td>
+          <span class="addr">${apt.addr}</span>
+          <span class="city">San Francisco</span>
+        </td>
+        <td class="rent">$${apt.rent.toLocaleString()}/mo</td>
+        <td class="status-wrap">
+          <select class="${s.cls}" data-id="${apt.id}" onchange="onStatus(this)">
+            ${Object.entries(STATUS).map(([k,v]) =>
+              `<option value="${k}" ${k===status?'selected':''}>${v.label}</option>`
+            ).join('')}
+          </select>
+        </td>
+        <td><input class="field" type="text" placeholder="Name" value="${contact}"
+          data-id="${apt.id}" data-field="contact" oninput="onField(this)"></td>
+        <td><input class="field" type="text" placeholder="Phone or email" value="${phone}"
+          data-id="${apt.id}" data-field="phone" oninput="onField(this)"></td>
+        <td>
+          <div class="tags" id="tags-${apt.id}">${tags}</div>
+          <button class="add-tag" onclick="openPicker('${apt.id}', this)">+ Amenities</button>
+        </td>
+        <td><textarea class="field" placeholder="Notes..."
+          data-id="${apt.id}" data-field="notes" oninput="onField(this)">${notes}</textarea></td>
+        <td><span class="walk ${walkClass(apt.walk)}">🚶 ${apt.walk}</span></td>
+        <td><a class="map-btn" href="index.html?focus=${apt.id}">View →</a></td>
+      </tr>`;
+    }).join('');
+
+    // Highlight row from hash
+    const hash = location.hash.slice(1);
+    if (hash) {
+      const row = document.getElementById('row-' + hash);
+      if (row) { row.classList.add('highlighted'); row.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }
+  }
+
+  function onStatus(el) {
+    const id = el.dataset.id;
+    const val = el.value;
+    save(id, 'status', val);
+    el.className = STATUS[val].cls;
+  }
+
+  function onField(el) {
+    save(el.dataset.id, el.dataset.field, el.value);
+  }
+
+  // Amenity picker
+  let pickerTarget = null;
+
+  function openPicker(id, btn) {
+    pickerTarget = id;
+    const selected = get(id, 'amenities', []);
+    document.getElementById('picker-options').innerHTML = AMENITIES.map(a =>
+      `<label><input type="checkbox" value="${a}" ${selected.includes(a)?'checked':''}> ${a}</label>`
+    ).join('');
+    const rect = btn.getBoundingClientRect();
+    const picker = document.getElementById('picker');
+    picker.style.display = 'block';
+    picker.style.top  = Math.min(rect.bottom + window.scrollY + 6, window.scrollY + window.innerHeight - 320) + 'px';
+    picker.style.left = Math.min(rect.left, window.innerWidth - 240) + 'px';
+  }
+
+  document.getElementById('picker-done').onclick = () => {
+    const checked = [...document.querySelectorAll('#picker-options input:checked')].map(c => c.value);
+    save(pickerTarget, 'amenities', checked);
+    document.getElementById('picker').style.display = 'none';
+    // Re-render just the tags for this row
+    const apt = APTS.find(a => a.id === pickerTarget);
+    if (apt) {
+      const tags = checked.map(a => `<span class="tag">${a}</span>`).join('');
+      document.getElementById('tags-' + pickerTarget).innerHTML = tags;
+    }
+  };
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#picker') && !e.target.classList.contains('add-tag'))
+      document.getElementById('picker').style.display = 'none';
+  });
+
+  render();
+</script>
+</body>
+</html>

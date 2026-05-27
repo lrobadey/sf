@@ -6,6 +6,7 @@
   <title>SF Bay Area Stores</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; }
@@ -67,7 +68,7 @@
   </style>
 </head>
 <body>
-  <h1>SF Bay Area Stores</h1>
+  <h1>SF Bay Area Stores &nbsp;<a href="table.html" style="font-size:12px;font-weight:400;color:#e8a020;text-decoration:none;border:1px solid #e8a020;padding:2px 8px;border-radius:4px;">📋 Apt Tracker</a></h1>
   <div id="map"></div>
   <div class="legend">
     <div><span class="legend-dot" style="background:#e63946"></span>lululemon</div>
@@ -188,19 +189,26 @@
       iconAnchor: [14, 14],
       popupAnchor: [0, -16]
     });
-    const apts = [
-      { lat: 37.7764, lng: -122.4226, addr: "400 Grove St" },
-      { lat: 37.7886, lng: -122.3940, addr: "388 Beale St" },
-      { lat: 37.7783, lng: -122.4153, addr: "1190 Mission St" },
-      { lat: 37.7782, lng: -122.3928, addr: "255 King St" },
-      { lat: 37.7869, lng: -122.4005, addr: "680 Mission St" },
-    ];
-    apts.forEach(apt => {
-      L.marker([apt.lat, apt.lng], { icon: aptIcon })
+    const markerMap = {};
+    APTS.forEach(apt => {
+      const m = L.marker([apt.lat, apt.lng], { icon: aptIcon })
         .addTo(map)
-        .bindTooltip(`<b>${apt.addr}</b><br>💰 $2,000/mo`, { direction: 'top', offset: [0, -16] })
-        .bindPopup(`<div class="popup-name" style="color:#e8a020">Potential Studio Apt</div><div class="popup-addr">📍 ${apt.addr}, San Francisco</div><div class="popup-status">💰 $2,000/mo</div>`);
+        .bindTooltip(`<b>${apt.addr}</b><br>💰 $${apt.rent.toLocaleString()}/mo`, { direction: 'top', offset: [0, -16] })
+        .bindPopup(`<div class="popup-name" style="color:#e8a020">Potential Studio Apt</div>
+          <div class="popup-addr">📍 ${apt.addr}, San Francisco</div>
+          <div class="popup-status">💰 $${apt.rent.toLocaleString()}/mo &nbsp;·&nbsp; 🚶 ${apt.walk} to SFCM</div>
+          <div style="margin-top:8px"><a href="table.html#${apt.id}" style="color:#e8a020;font-size:12px;font-weight:600;">📋 View Details →</a></div>`);
+      markerMap[apt.id] = m;
     });
+
+    // Focus a specific apt if ?focus= param is present
+    const focusId = new URLSearchParams(location.search).get('focus');
+    if (focusId && markerMap[focusId]) {
+      setTimeout(() => {
+        map.setView(markerMap[focusId].getLatLng(), 16);
+        markerMap[focusId].openPopup();
+      }, 300);
+    }
 
     L.marker([37.7727, -122.4296], { icon: homeIcon })
       .addTo(map)
